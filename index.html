@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,68 +6,177 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAME MARKET</title>
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #101827;
-  color: white;
-  text-align: center;
-}
-header {
-  background: #17243a;
-  padding: 25px;
-  font-size: 28px;
-  font-weight: bold;
-  color: #38bdf8;
-}
-.container {
-  padding: 25px;
-}
-h2 {
-  margin-top: 35px;
-}
-.card {
-  background: #1e293b;
-  padding: 25px;
-  margin: 15px auto;
-  border-radius: 15px;
-  max-width: 400px;
-}
-button {
-  background: #0ea5e9;
-  color: white;
-  border: none;
-  padding: 13px 25px;
-  border-radius: 9px;
-  font-size: 17px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:#101114;color:white;font-family:Arial,sans-serif}
+header{background:#191a20;padding:22px 15px;text-align:center;border-bottom:1px solid #b99442}
+.logo{font-size:29px;font-weight:bold;color:#e5bd61}
+.logo span{color:white}
+header p{color:#aaa;font-size:13px}
+nav{display:flex;justify-content:center;gap:10px;padding:14px}
+button{border:0;border-radius:9px;padding:12px 17px;font-weight:bold;cursor:pointer}
+.gold{background:#d6ad50;color:#171717}
+.dark{background:#292b33;color:white}
+main{padding:15px;max-width:750px;margin:auto}
+h2{color:#e5bd61}
+.search{width:100%;padding:14px;border:1px solid #41434b;background:#202127;color:white;border-radius:10px;font-size:16px;margin:10px 0}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
+.filters button{white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.card{background:#1c1e25;border:1px solid #343640;border-radius:13px;overflow:hidden}
+.card img{width:100%;height:130px;object-fit:cover;background:#292b33}
+.card-content{padding:14px}
+.card h3{margin:5px 0;color:#e5bd61}
+.card p{color:#bbb;font-size:14px}
+.price{font-size:20px;color:#e5bd61;font-weight:bold}
+.card button{width:100%;margin-top:10px}
+.empty{text-align:center;color:#aaa;padding:35px}
+.add-box{background:#1c1e25;padding:17px;border-radius:13px;margin-top:25px;border:1px solid #41434b}
+input,select,textarea{width:100%;padding:13px;margin:7px 0;background:#292b33;color:white;border:1px solid #454751;border-radius:8px;font-size:15px}
+label{display:block;color:#ddd;margin-top:8px}
+.add-box button{width:100%;margin-top:12px}
+footer{text-align:center;padding:25px;color:#777;font-size:13px}
 </style>
 </head>
 <body>
 
-<header>🎮 GAME MARKET</header>
+<header>
+<div class="logo">GAME <span>MARKET</span></div>
+<p>سوقك الآمن لبيع وشراء حسابات الألعاب</p>
+</header>
 
-<div class="container">
-<h2>مرحباً بك في GAME MARKET</h2>
-<p>متجرك المميز للألعاب والعروض</p>
+<nav>
+<button class="gold" onclick="showAll()">الرئيسية</button>
+<button class="dark" onclick="document.getElementById('add').scrollIntoView()">بيع حسابك</button>
+</nav>
 
+<main>
+<h2>🎮 اكتشف الحسابات</h2>
+
+<input class="search" id="search" placeholder="ابحث عن حساب..." oninput="render()">
+
+<div class="filters">
+<button class="gold" onclick="filterGame('الكل')">الكل</button>
+<button class="dark" onclick="filterGame('كلاش أوف كلانس')">كلاش أوف كلانس</button>
+<button class="dark" onclick="filterGame('ببجي')">ببجي</button>
+<button class="dark" onclick="filterGame('فري فاير')">فري فاير</button>
+</div>
+
+<div class="grid" id="listings"></div>
+
+<section class="add-box" id="add">
+<h2>➕ أضف حسابك للبيع</h2>
+
+<form id="listingForm">
+<label>اسم الحساب</label>
+<input id="name" required placeholder="مثلاً: قرية ماكس">
+
+<label>اللعبة</label>
+<select id="game">
+<option>كلاش أوف كلانس</option>
+<option>ببجي</option>
+<option>فري فاير</option>
+<option>أخرى</option>
+</select>
+
+<label>مستوى الحساب أو وصفه</label>
+<input id="level" required placeholder="مثلاً: تاون هول 18">
+
+<label>السعر بالدولار</label>
+<input id="price" type="number" min="1" required placeholder="مثلاً: 100">
+
+<label>طريقة التواصل (رابط واتساب)</label>
+<input id="contact" type="url" required placeholder="https://wa.me/">
+
+<button class="gold" type="submit">نشر الحساب</button>
+</form>
+</section>
+</main>
+
+<footer>
+GAME MARKET © 2026
+<br>منصة بيع وشراء حسابات الألعاب
+</footer>
+
+<script>
+let listings=JSON.parse(localStorage.getItem('gm_listings')||'[]');
+let currentFilter='الكل';
+
+function save(){
+localStorage.setItem('gm_listings',JSON.stringify(listings));
+}
+
+function safe(s){
+return String(s).replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
+}
+
+function render(){
+let q=document.getElementById('search').value.toLowerCase();
+let filtered=listings.filter(x=>
+(currentFilter==='الكل'||x.game===currentFilter)&&
+(x.name+' '+x.game+' '+x.level).toLowerCase().includes(q)
+);
+
+let box=document.getElementById('listings');
+if(!filtered.length){
+box.innerHTML='<div class="empty">لا توجد حسابات حالياً 🎮<br>كن أول من يضيف حساباً للبيع!</div>';
+return;
+}
+
+box.innerHTML=filtered.map(x=>`
 <div class="card">
-<h3>🎮 الألعاب</h3>
-<p>اكتشف أفضل الألعاب</p>
-<button>استكشف الآن</button>
+<div class="card-content">
+<h3>${safe(x.name)}</h3>
+<p>🎮 ${safe(x.game)}</p>
+<p>⭐ ${safe(x.level)}</p>
+<div class="price">$${safe(x.price)}</div>
+<a href="${safe(x.contact)}" target="_blank" rel="noopener noreferrer">
+<button class="gold">تواصل مع البائع</button>
+</a>
 </div>
+</div>
+`).join('');
+}
 
-<div class="card">
-<h3>🔥 العروض</h3>
-<p>عروض وخصومات مميزة</p>
-<button>شاهد العروض</button>
-</div>
+function filterGame(game){
+currentFilter=game;
+render();
+}
 
-<div class="card">
-<h3>🛒 المتجر</h3>
-<p>قريباً المزيد من المنتجات</p>
-</div>
-</div>
+function showAll(){
+currentFilter='الكل';
+document.getElementById('search').value='';
+render();
+}
 
+document.getElementById('listingForm').addEventListener('submit',function(e){
+e.preventDefault();
+
+let contact=document.getElementById('contact').value;
+if(!/^https:\/\/wa\.me\//i.test(contact)){
+alert('أدخل رابط واتساب صحيحاً يبدأ بـ https://wa.me/');
+return;
+}
+
+let item={
+name:document.getElementById('name').value,
+game:document.getElementById('game').value,
+level:document.getElementById('level').value,
+price:document.getElementById('price').value,
+contact:contact
+};
+
+listings.unshift(item);
+save();
+this.reset();
+showAll();
+alert('تمت إضافة الحساب بنجاح على هذا الجهاز!');
+window.scrollTo({top:0,behavior:'smooth'});
+});
+
+render();
+</script>
 </body>
   </html>
+  
