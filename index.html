@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -6,177 +5,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GAME MARKET</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101114;color:white;font-family:Arial,sans-serif}
-header{background:#191a20;padding:22px 15px;text-align:center;border-bottom:1px solid #b99442}
-.logo{font-size:29px;font-weight:bold;color:#e5bd61}
-.logo span{color:white}
-header p{color:#aaa;font-size:13px}
-nav{display:flex;justify-content:center;gap:10px;padding:14px}
-button{border:0;border-radius:9px;padding:12px 17px;font-weight:bold;cursor:pointer}
-.gold{background:#d6ad50;color:#171717}
-.dark{background:#292b33;color:white}
-main{padding:15px;max-width:750px;margin:auto}
-h2{color:#e5bd61}
-.search{width:100%;padding:14px;border:1px solid #41434b;background:#202127;color:white;border-radius:10px;font-size:16px;margin:10px 0}
-.filters{display:flex;gap:8px;overflow-x:auto;padding:10px 0}
-.filters button{white-space:nowrap}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-.card{background:#1c1e25;border:1px solid #343640;border-radius:13px;overflow:hidden}
-.card img{width:100%;height:130px;object-fit:cover;background:#292b33}
-.card-content{padding:14px}
-.card h3{margin:5px 0;color:#e5bd61}
-.card p{color:#bbb;font-size:14px}
-.price{font-size:20px;color:#e5bd61;font-weight:bold}
-.card button{width:100%;margin-top:10px}
-.empty{text-align:center;color:#aaa;padding:35px}
-.add-box{background:#1c1e25;padding:17px;border-radius:13px;margin-top:25px;border:1px solid #41434b}
-input,select,textarea{width:100%;padding:13px;margin:7px 0;background:#292b33;color:white;border:1px solid #454751;border-radius:8px;font-size:15px}
-label{display:block;color:#ddd;margin-top:8px}
-.add-box button{width:100%;margin-top:12px}
-footer{text-align:center;padding:25px;color:#777;font-size:13px}
+*{box-sizing:border-box;scroll-behavior:smooth}
+body{margin:0;background:#101114;color:#fff;font-family:Arial,sans-serif;text-align:center}
+header{background:#191a20;padding:22px}
+.logo{font-size:29px;font-weight:bold;color:#d6ad50}
+header p{color:#aaa;font-size:13px;margin:6px 0 0}
+nav{display:flex;justify-content:center;gap:18px;padding:14px;background:#1c1e26;flex-wrap:wrap}
+nav a{color:#fff;text-decoration:none;font-weight:bold}
+.wrap{padding:20px;max-width:520px;margin:auto}
+h2{color:#d6ad50;margin:30px 0 14px}
+.card{background:#1c1e26;border:1px solid #2e3039;border-radius:16px;padding:18px;margin:14px 0;text-align:right}
+.card h3{margin:0 0 6px}
+.game{color:#d6ad50;font-weight:bold}
+.price{color:#d6ad50;font-size:22px;font-weight:bold;margin:8px 0}
+button,.wa{display:block;width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer;text-align:center;text-decoration:none;background:#d6ad50;color:#171717}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.chip{flex:none;width:auto;padding:8px 14px;background:#292b33;color:#fff;font-size:14px}
+.chip.on{background:#d6ad50;color:#171717}
+label{display:block;text-align:right;margin:14px 0 6px}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #3a3d48;background:#292b33;color:#fff;font-size:16px}
+small{display:block;color:#aaa;text-align:right;margin-top:6px}
+#msg{color:#d6ad50;margin-top:10px}
+footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
 </style>
 </head>
 <body>
 
 <header>
-<div class="logo">GAME <span>MARKET</span></div>
-<p>سوقك الآمن لبيع وشراء حسابات الألعاب</p>
+  <div class="logo">🎮 GAME MARKET</div>
+  <p>سوق حسابات الألعاب</p>
 </header>
-
 <nav>
-<button class="gold" onclick="showAll()">الرئيسية</button>
-<button class="dark" onclick="document.getElementById('add').scrollIntoView()">بيع حسابك</button>
+  <a href="#">الرئيسية</a>
+  <a href="#list">الحسابات</a>
+  <a href="#sell">بيع حسابك</a>
 </nav>
 
-<main>
-<h2>🎮 اكتشف الحسابات</h2>
+<div class="wrap">
+  <h2 id="list">🎮 الحسابات المعروضة</h2>
+  <div class="chips" id="chips"></div>
+  <div id="accounts"><p>جاري التحميل...</p></div>
 
-<input class="search" id="search" placeholder="ابحث عن حساب..." oninput="render()">
+  <h2 id="sell">➕ أضف حسابك للبيع</h2>
+  <div class="card">
+    <label>اللعبة</label>
+    <select id="game" onchange="updateField()"></select>
 
-<div class="filters">
-<button class="gold" onclick="filterGame('الكل')">الكل</button>
-<button class="dark" onclick="filterGame('كلاش أوف كلانس')">كلاش أوف كلانس</button>
-<button class="dark" onclick="filterGame('ببجي')">ببجي</button>
-<button class="dark" onclick="filterGame('فري فاير')">فري فاير</button>
+    <label>اسم الحساب</label>
+    <input id="name" placeholder="مثلاً: قرية ماكس">
+
+    <label id="idLabel">المعرّف</label>
+    <input id="accId">
+    <small>⚠️ لا تكتب كلمة السر هنا أبداً</small>
+
+    <label>السعر ($)</label>
+    <input id="price" type="number" placeholder="مثلاً: 50">
+
+    <br>
+    <button onclick="addAccount()">نشر الحساب</button>
+    <p id="msg"></p>
+  </div>
 </div>
 
-<div class="grid" id="listings"></div>
-
-<section class="add-box" id="add">
-<h2>➕ أضف حسابك للبيع</h2>
-
-<form id="listingForm">
-<label>اسم الحساب</label>
-<input id="name" required placeholder="مثلاً: قرية ماكس">
-
-<label>اللعبة</label>
-<select id="game">
-<option>كلاش أوف كلانس</option>
-<option>ببجي</option>
-<option>فري فاير</option>
-<option>أخرى</option>
-</select>
-
-<label>مستوى الحساب أو وصفه</label>
-<input id="level" required placeholder="مثلاً: تاون هول 18">
-
-<label>السعر بالدولار</label>
-<input id="price" type="number" min="1" required placeholder="مثلاً: 100">
-
-<label>طريقة التواصل (رابط واتساب)</label>
-<input id="contact" type="url" required placeholder="https://wa.me/">
-
-<button class="gold" type="submit">نشر الحساب</button>
-</form>
-</section>
-</main>
-
-<footer>
-GAME MARKET © 2026
-<br>منصة بيع وشراء حسابات الألعاب
-</footer>
+<footer>© 2026 GAME MARKET</footer>
 
 <script>
-let listings=JSON.parse(localStorage.getItem('gm_listings')||'[]');
-let currentFilter='الكل';
+// ✏️ غيّر رقمك هون (بدون + وبدون صفر بالبداية، مع رمز الدولة)
+const WA = "963XXXXXXXXX";
 
-function save(){
-localStorage.setItem('gm_listings',JSON.stringify(listings));
-}
+const URL_ = "https://bzylclvczxhehmsnyhju.supabase.co/rest/v1/products";
+const KEY = "sb_publishable_5Km0CwnO9ftM5-3LGVDztA_9vDoOt6W";
+const H = {apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json"};
 
-function safe(s){
-return String(s).replace(/[&<>"']/g,c=>({
-'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-}[c]));
-}
-
-function render(){
-let q=document.getElementById('search').value.toLowerCase();
-let filtered=listings.filter(x=>
-(currentFilter==='الكل'||x.game===currentFilter)&&
-(x.name+' '+x.game+' '+x.level).toLowerCase().includes(q)
-);
-
-let box=document.getElementById('listings');
-if(!filtered.length){
-box.innerHTML='<div class="empty">لا توجد حسابات حالياً 🎮<br>كن أول من يضيف حساباً للبيع!</div>';
-return;
-}
-
-box.innerHTML=filtered.map(x=>`
-<div class="card">
-<div class="card-content">
-<h3>${safe(x.name)}</h3>
-<p>🎮 ${safe(x.game)}</p>
-<p>⭐ ${safe(x.level)}</p>
-<div class="price">$${safe(x.price)}</div>
-<a href="${safe(x.contact)}" target="_blank" rel="noopener noreferrer">
-<button class="gold">تواصل مع البائع</button>
-</a>
-</div>
-</div>
-`).join('');
-}
-
-function filterGame(game){
-currentFilter=game;
-render();
-}
-
-function showAll(){
-currentFilter='الكل';
-document.getElementById('search').value='';
-render();
-}
-
-document.getElementById('listingForm').addEventListener('submit',function(e){
-e.preventDefault();
-
-let contact=document.getElementById('contact').value;
-if(!/^https:\/\/wa\.me\//i.test(contact)){
-alert('أدخل رابط واتساب صحيحاً يبدأ بـ https://wa.me/');
-return;
-}
-
-let item={
-name:document.getElementById('name').value,
-game:document.getElementById('game').value,
-level:document.getElementById('level').value,
-price:document.getElementById('price').value,
-contact:contact
+const games = {
+  pubg:     {t: "ببجي",              l: "الأيدي (ID)",      h: "مثلاً: 5123456789"},
+  clash:    {t: "كلاش أوف كلانس",    l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
+  royale:   {t: "كلاش رويال",        l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
+  brawl:    {t: "براول ستارز",       l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
+  freefire: {t: "فري فاير",          l: "الأيدي (ID)",      h: "مثلاً: 123456789"},
+  cod:      {t: "كول أوف ديوتي موبايل", l: "الأيدي (UID)",  h: "مثلاً: 6812345678"},
+  fortnite: {t: "فورتنايت",          l: "اسم المستخدم",     h: "مثلاً: Player123"},
+  roblox:   {t: "روبلوكس",           l: "اسم المستخدم",     h: "مثلاً: Player123"},
+  minecraft:{t: "ماكنرافت",          l: "اسم المستخدم",     h: "مثلاً: Steve123"},
+  fc:       {t: "EA FC / فيفا",      l: "الأيدي (ID)",      h: "مثلاً: اسم الحساب أو الأيدي"},
+  genshin:  {t: "جينشن إمباكت",      l: "الـ UID",          h: "مثلاً: 800123456"},
+  other:    {t: "لعبة أخرى",         l: "المعرّف",          h: "الأيدي أو اسم المستخدم"}
 };
 
-listings.unshift(item);
-save();
-this.reset();
-showAll();
-alert('تمت إضافة الحساب بنجاح على هذا الجهاز!');
-window.scrollTo({top:0,behavior:'smooth'});
-});
+let filter = "all", rows = [];
 
-render();
+function esc(s){const d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+
+function buildUI(){
+  document.getElementById("game").innerHTML =
+    Object.keys(games).map(k=>'<option value="'+k+'">'+games[k].t+'</option>').join("");
+  updateField();
+  drawChips();
+}
+
+function updateField(){
+  const g = games[document.getElementById("game").value];
+  document.getElementById("idLabel").textContent = g.l;
+  document.getElementById("accId").placeholder = g.h;
+}
+
+function drawChips(){
+  const all = [["all","الكل"]].concat(Object.keys(games).map(k=>[k,games[k].t]));
+  document.getElementById("chips").innerHTML = all.map(c =>
+    '<button class="chip '+(filter===c[0]?'on':'')+'" onclick="setFilter(\''+c[0]+'\')">'+c[1]+'</button>').join("");
+}
+
+function setFilter(f){filter=f;drawChips();draw()}
+
+function draw(){
+  const box = document.getElementById("accounts");
+  const list = filter==="all" ? rows : rows.filter(a=>a.game===filter);
+  if(!list.length){box.innerHTML="<p>ما في حسابات هون بعد.</p>";return}
+  box.innerHTML = list.map(a=>{
+    const g = games[a.game] || {t:a.game, l:"المعرّف"};
+    const text = encodeURIComponent("مرحباً، أنا مهتم بحساب "+g.t+" ("+a.name+") بسعر $"+a.price);
+    return '<div class="card"><h3>'+esc(a.name)+'</h3>'+
+      '<div class="game">'+esc(g.t)+'</div>'+
+      '<p>'+esc(g.l)+': '+esc(a.account_id)+'</p>'+
+      '<div class="price">$'+esc(a.price)+'</div>'+
+      '<a class="wa" href="https://wa.me/'+WA+'?text='+text+'" target="_blank">تواصل مع البائع</a></div>';
+  }).join("");
+}
+
+async function load(){
+  const box = document.getElementById("accounts");
+  try{
+    const r = await fetch(URL_+"?select=*&order=created_at.desc",{headers:H});
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.message||"خطأ");
+    rows = data; draw();
+  }catch(e){box.innerHTML="<p>تعذّر التحميل: "+esc(e.message)+"</p>"}
+}
+
+async function addAccount(){
+  const msg = document.getElementById("msg");
+  const body = {
+    game: document.getElementById("game").value,
+    name: document.getElementById("name").value.trim(),
+    account_id: document.getElementById("accId").value.trim(),
+    price: Number(document.getElementById("price").value)
+  };
+  if(!body.name||!body.account_id||!body.price){msg.textContent="عبّي كل الحقول";return}
+  msg.textContent="جاري النشر...";
+  try{
+    const r = await fetch(URL_,{method:"POST",headers:Object.assign({Prefer:"return=minimal"},H),body:JSON.stringify(body)});
+    if(!r.ok){const e=await r.json();throw new Error(e.message||"خطأ")}
+    msg.textContent="✅ تم نشر الحساب";
+    ["name","accId","price"].forEach(i=>document.getElementById(i).value="");
+    load();
+  }catch(e){msg.textContent="❌ "+e.message}
+}
+
+buildUI();
+load();
 </script>
 </body>
-  </html>
-  
+</html>
