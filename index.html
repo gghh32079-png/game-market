@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GAME MARKET سوق حسابات الألعاب: ببجي، كلاش، فري فاير وغيرها">
 <title>GAME MARKET</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎮%3C/text%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box;scroll-behavior:smooth}
 body{margin:0;background:#101114;color:#fff;font-family:Arial,sans-serif;text-align:center}
@@ -21,14 +23,17 @@ h2{color:#d6ad50;margin:30px 0 14px}
 .pics{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
 .pics img{height:150px;border-radius:10px;flex:none}
 button,.wa{display:block;width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer;text-align:center;text-decoration:none;background:#d6ad50;color:#171717}
+.second{background:#292b33;color:#fff;margin-top:10px}
+.link{background:none;color:#d6ad50;font-weight:normal;text-decoration:underline;margin-top:6px;padding:8px}
+.del{background:#3a2226;color:#ff8a8a;margin-top:10px}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
 .chip{flex:none;width:auto;padding:8px 14px;background:#292b33;color:#fff;font-size:14px}
 .chip.on{background:#d6ad50;color:#171717}
 label{display:block;text-align:right;margin:14px 0 6px}
 input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #3a3d48;background:#292b33;color:#fff;font-size:16px}
 small{display:block;color:#aaa;text-align:right;margin-top:6px}
-#msg{color:#d6ad50;margin-top:10px}
-footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
+.msg{color:#d6ad50;margin-top:10px}
+footer{background:#191a20;padding:22px;margin-top:40px;color:#888;font-size:13px;line-height:1.7}
 </style>
 </head>
 <body>
@@ -44,40 +49,74 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
 </nav>
 
 <div class="wrap">
+
+  <div class="card" id="resetBox" style="display:none">
+    <h3>🔑 كلمة سر جديدة</h3>
+    <label>اكتب كلمة السر الجديدة</label>
+    <input id="newPass" type="password" placeholder="6 أحرف على الأقل" autocomplete="new-password">
+    <br>
+    <button onclick="setNewPass()">حفظ كلمة السر</button>
+    <p class="msg" id="resetMsg"></p>
+  </div>
+
   <h2 id="list">🎮 الحسابات المعروضة</h2>
   <div class="chips" id="chips"></div>
   <div id="accounts"><p>جاري التحميل...</p></div>
 
-  <h2 id="sell">➕ أضف حسابك للبيع</h2>
-  <div class="card">
-    <label>اللعبة</label>
-    <select id="game" onchange="updateField()"></select>
+  <h2 id="sell">➕ بيع حسابك</h2>
 
-    <label id="nameLabel">اسم الحساب</label>
-    <input id="name">
-
-    <label id="idLabel">المعرّف</label>
-    <input id="accId">
-    <small>⚠️ لا تكتب كلمة السر هنا أبداً</small>
-
-    <label>السعر ($)</label>
-    <input id="price" type="number" placeholder="مثلاً: 50">
-
-    <label>صور الحساب (حتى 3 صور)</label>
-    <input id="imgs" type="file" accept="image/*" multiple>
-    <small id="imgInfo">اختياري، بس الصور بتزيد فرصة البيع</small>
-
-    <label>رابط الواتساب تبعك</label>
-    <input id="contact" placeholder="https://wa.me/963938948259 أو اكتب رقمك">
-    <small>المشتري رح يتواصل معك من هذا الرابط</small>
-
+  <div class="card" id="loginBox">
+    <h3>🔐 سجّل دخولك عشان تنشر</h3>
+    <label>الإيميل</label>
+    <input id="email" type="email" placeholder="name@example.com" autocomplete="email">
+    <label>كلمة السر</label>
+    <input id="pass" type="password" placeholder="6 أحرف على الأقل" autocomplete="current-password">
     <br>
-    <button id="pubBtn" onclick="addAccount()">نشر الحساب</button>
-    <p id="msg"></p>
+    <button onclick="doAuth('login')">دخول</button>
+    <button class="second" onclick="doAuth('signup')">إنشاء حساب جديد</button>
+    <button class="link" onclick="forgot()">نسيت كلمة السر؟</button>
+    <p class="msg" id="authMsg"></p>
+  </div>
+
+  <div id="sellBox" style="display:none">
+    <div class="card">
+      <small style="text-align:center;margin:0 0 10px">مسجّل دخول: <span id="who"></span></small>
+      <button class="second" style="margin:0" onclick="logout()">تسجيل خروج</button>
+    </div>
+
+    <div class="card">
+      <label>اللعبة</label>
+      <select id="game" onchange="updateField()"></select>
+
+      <label id="nameLabel">اسم الحساب</label>
+      <input id="name">
+
+      <label id="idLabel">المعرّف</label>
+      <input id="accId">
+      <small>⚠️ لا تكتب كلمة السر هنا أبداً</small>
+
+      <label>السعر ($)</label>
+      <input id="price" type="number" placeholder="مثلاً: 50">
+
+      <label>صور الحساب (حتى 3 صور)</label>
+      <input id="imgs" type="file" accept="image/*" multiple>
+      <small id="imgInfo">اختياري، بس الصور بتزيد فرصة البيع</small>
+
+      <label>رابط الواتساب تبعك</label>
+      <input id="contact" placeholder="https://wa.me/963938948259 أو اكتب رقمك">
+      <small>المشتري رح يتواصل معك من هذا الرابط</small>
+
+      <br>
+      <button id="pubBtn" onclick="addAccount()">نشر الحساب</button>
+      <p class="msg" id="msg"></p>
+    </div>
   </div>
 </div>
 
-<footer>© 2026 GAME MARKET</footer>
+<footer>
+  <div>© 2026 GAME MARKET</div>
+  <div>⚠️ الموقع وسيط للتعارف بين البائع والمشتري فقط، ولا يضمن الصفقات. تحقق من الحساب قبل الدفع ولا ترسل كلمات سر.</div>
+</footer>
 
 <script>
 const DEFAULT_WA = "https://wa.me/963938948259";
@@ -104,10 +143,128 @@ const games = {
   other:    {t:"لعبة أخرى",            n:"اسم الحساب",     nh:"اكتب اسم الحساب",      l:"المعرّف",       h:"الأيدي أو اسم المستخدم"}
 };
 
-let filter = "all", rows = [];
+let filter = "all", rows = [], S = null, R = null, hashMsg = "";
+try { S = JSON.parse(localStorage.getItem("gm_s") || "null"); } catch (e) {}
 
 function esc(s){const d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
 
+/* ---------- قراءة رابط استعادة كلمة السر ---------- */
+function checkHash(){
+  const h = location.hash;
+  if (!h || h.length < 2) return;
+  const p = new URLSearchParams(h.slice(1));
+  if (p.get("type") === "recovery" && p.get("access_token")) {
+    R = {at: p.get("access_token"), rt: p.get("refresh_token"), ex: Number(p.get("expires_in")) || 3600};
+    history.replaceState(null, "", location.pathname + location.search);
+    window.scrollTo(0, 0);
+  } else if (p.get("error")) {
+    hashMsg = p.get("error_code") === "otp_expired"
+      ? "الرابط منتهي أو انستعمل، اطلب رابط جديد من (نسيت كلمة السر؟)"
+      : "تعذّر التحقق من الرابط، جرّب مرة ثانية";
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+}
+
+/* ---------- تسجيل الدخول ---------- */
+function saveS(d){
+  S = d ? {at:d.access_token, rt:d.refresh_token, exp:Math.floor(Date.now()/1000)+(d.expires_in||3600),
+           uid:d.user && d.user.id, email:d.user && d.user.email} : null;
+  try { S ? localStorage.setItem("gm_s", JSON.stringify(S)) : localStorage.removeItem("gm_s"); } catch (e) {}
+}
+
+async function token(){
+  if (!S) throw new Error("سجّل دخولك أولاً");
+  if (S.exp - 60 < Date.now()/1000) {
+    const r = await fetch(BASE + "/auth/v1/token?grant_type=refresh_token", {
+      method:"POST", headers:{apikey:KEY,"Content-Type":"application/json"},
+      body: JSON.stringify({refresh_token:S.rt})
+    });
+    const d = await r.json();
+    if (!r.ok) { saveS(null); drawAuth(); throw new Error("انتهت الجلسة، سجّل دخولك من جديد"); }
+    saveS(d);
+  }
+  return S.at;
+}
+
+function arErr(m){
+  m = String(m || "");
+  if (/invalid login/i.test(m)) return "الإيميل أو كلمة السر غلط";
+  if (/already registered/i.test(m)) return "هذا الإيميل مسجّل من قبل، اضغط دخول";
+  if (/different from the old/i.test(m)) return "كلمة السر الجديدة لازم تختلف عن القديمة";
+  if (/password/i.test(m) && /6|short|weak/i.test(m)) return "كلمة السر ضعيفة، استعمل 6 أحرف أو أكثر";
+  if (/rate limit/i.test(m)) return "محاولات كتير، جرّب بعد شوي";
+  if (/confirm/i.test(m)) return "لازم تأكّد الإيميل أولاً";
+  return m || "خطأ";
+}
+
+async function doAuth(kind){
+  const out = document.getElementById("authMsg");
+  const email = document.getElementById("email").value.trim();
+  const pass = document.getElementById("pass").value;
+  if (!email || pass.length < 6) { out.textContent = "اكتب الإيميل وكلمة سر من 6 أحرف أو أكثر"; return; }
+  out.textContent = "لحظة...";
+  try {
+    const url = kind === "signup" ? "/auth/v1/signup" : "/auth/v1/token?grant_type=password";
+    const r = await fetch(BASE + url, {method:"POST", headers:{apikey:KEY,"Content-Type":"application/json"},
+                                       body: JSON.stringify({email:email, password:pass})});
+    const d = await r.json();
+    if (!r.ok) throw new Error(arErr(d.msg || d.error_description || d.message));
+    if (!d.access_token) { out.textContent = "تم إنشاء الحساب. أكّد الإيميل من بريدك ثم اضغط دخول"; return; }
+    saveS(d);
+    document.getElementById("pass").value = "";
+    out.textContent = "";
+    drawAuth(); draw();
+  } catch (e) { out.textContent = "❌ " + e.message; }
+}
+
+async function forgot(){
+  const out = document.getElementById("authMsg");
+  const email = document.getElementById("email").value.trim();
+  if (!email) { out.textContent = "اكتب إيميلك بالخانة فوق أولاً، وبعدين اضغط نسيت كلمة السر"; return; }
+  out.textContent = "لحظة...";
+  try {
+    const back = encodeURIComponent(location.origin + location.pathname);
+    const r = await fetch(BASE + "/auth/v1/recover?redirect_to=" + back, {
+      method:"POST", headers:{apikey:KEY,"Content-Type":"application/json"},
+      body: JSON.stringify({email:email})
+    });
+    if (!r.ok) { const d = await r.json(); throw new Error(arErr(d.msg || d.error_description || d.message)); }
+    out.textContent = "✅ إذا الإيميل مسجّل عنا، رح توصلك رسالة فيها رابط لتغيير كلمة السر (شيّك على Spam كمان)";
+  } catch (e) { out.textContent = "❌ " + e.message; }
+}
+
+async function setNewPass(){
+  const out = document.getElementById("resetMsg");
+  const pass = document.getElementById("newPass").value;
+  if (pass.length < 6) { out.textContent = "كلمة السر لازم 6 أحرف أو أكثر"; return; }
+  out.textContent = "لحظة...";
+  try {
+    const r = await fetch(BASE + "/auth/v1/user", {
+      method:"PUT",
+      headers:{apikey:KEY, Authorization:"Bearer " + R.at, "Content-Type":"application/json"},
+      body: JSON.stringify({password:pass})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(arErr(d.msg || d.error_description || d.message));
+    saveS({access_token:R.at, refresh_token:R.rt, expires_in:R.ex, user:d});
+    R = null;
+    document.getElementById("newPass").value = "";
+    out.textContent = "";
+    drawAuth(); draw();
+    alert("تم تغيير كلمة السر وسجّلنا دخولك ✅");
+  } catch (e) { out.textContent = "❌ " + e.message; }
+}
+
+function logout(){ saveS(null); drawAuth(); draw(); }
+
+function drawAuth(){
+  document.getElementById("resetBox").style.display = R ? "block" : "none";
+  document.getElementById("loginBox").style.display = (S || R) ? "none" : "block";
+  document.getElementById("sellBox").style.display = (S && !R) ? "block" : "none";
+  document.getElementById("who").textContent = S ? S.email : "";
+}
+
+/* ---------- أدوات ---------- */
 function cleanWA(v){
   v = (v || "").trim();
   if (/^https:\/\/wa\.me\/\d{7,15}(\?.*)?$/.test(v)) return v;
@@ -119,7 +276,6 @@ function cleanWA(v){
   return null;
 }
 
-// تصغير الصورة قبل الرفع (أقصى 900 بيكسل)
 function resize(file){
   return new Promise((res, rej) => {
     const img = new Image();
@@ -139,21 +295,25 @@ function resize(file){
 }
 
 async function uploadImage(blob){
-  const name = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+  const t = await token();
+  const name = S.uid + "-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
   const r = await fetch(STORE + "/" + name, {
     method: "POST",
-    headers: {apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "image/jpeg"},
+    headers: {apikey: KEY, Authorization: "Bearer " + t, "Content-Type": "image/jpeg"},
     body: blob
   });
   if (!r.ok) throw new Error("فشل رفع الصورة");
   return PUBLIC + "/" + name;
 }
 
+/* ---------- الواجهة ---------- */
 function buildUI(){
   document.getElementById("game").innerHTML =
     Object.keys(games).map(k=>'<option value="'+k+'">'+games[k].t+'</option>').join("");
   updateField();
   drawChips();
+  drawAuth();
+  if (hashMsg) document.getElementById("authMsg").textContent = hashMsg;
   document.getElementById("imgs").addEventListener("change", function(){
     const n = this.files.length;
     document.getElementById("imgInfo").textContent =
@@ -188,11 +348,13 @@ function draw(){
     const picsHtml = pics.length
       ? '<div class="pics">' + pics.map(u => '<a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" loading="lazy" alt=""></a>').join("") + '</div>'
       : "";
+    const mine = S && a.user_id && a.user_id === S.uid;
+    const delBtn = mine ? '<button class="del" onclick="del('+Number(a.id)+')">🗑 حذف حسابي</button>' : "";
     return '<div class="card">'+picsHtml+'<h3>'+esc(a.name)+'</h3>'+
       '<div class="game">'+esc(g.t)+'</div>'+
       '<p>'+esc(g.l)+': '+esc(a.account_id)+'</p>'+
       '<div class="price">$'+esc(a.price)+'</div>'+
-      '<a class="wa" href="'+esc(link)+'" target="_blank" rel="noopener">تواصل مع البائع</a></div>';
+      '<a class="wa" href="'+esc(link)+'" target="_blank" rel="noopener">تواصل مع البائع</a>'+delBtn+'</div>';
   }).join("");
 }
 
@@ -204,6 +366,16 @@ async function load(){
     if(!r.ok) throw new Error(data.message||"خطأ");
     rows = data; draw();
   }catch(e){box.innerHTML="<p>تعذّر التحميل: "+esc(e.message)+"</p>"}
+}
+
+async function del(id){
+  if (!confirm("متأكد بدك تحذف هذا الحساب؟")) return;
+  try {
+    const t = await token();
+    const r = await fetch(URL_ + "?id=eq." + id, {method:"DELETE", headers:{apikey:KEY, Authorization:"Bearer " + t}});
+    if (!r.ok) throw new Error("تعذّر الحذف");
+    load();
+  } catch (e) { alert(e.message); }
 }
 
 async function addAccount(){
@@ -229,7 +401,10 @@ async function addAccount(){
     }
     if (urls.length) body.images = urls.join(",");
     msg.textContent = "جاري النشر...";
-    const r = await fetch(URL_,{method:"POST",headers:Object.assign({Prefer:"return=minimal"},H),body:JSON.stringify(body)});
+    const t = await token();
+    const r = await fetch(URL_,{method:"POST",
+      headers:{apikey:KEY, Authorization:"Bearer " + t, "Content-Type":"application/json", Prefer:"return=minimal"},
+      body:JSON.stringify(body)});
     if(!r.ok){const e=await r.json();throw new Error(e.message||"خطأ")}
     msg.textContent="✅ تم نشر الحساب";
     ["name","accId","price","contact","imgs"].forEach(i=>document.getElementById(i).value="");
@@ -239,8 +414,9 @@ async function addAccount(){
   btn.disabled = false;
 }
 
+checkHash();
 buildUI();
 load();
 </script>
 </body>
-  </html>
+</html>
