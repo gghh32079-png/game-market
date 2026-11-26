@@ -18,6 +18,8 @@ h2{color:#d6ad50;margin:30px 0 14px}
 .card h3{margin:0 0 6px}
 .game{color:#d6ad50;font-weight:bold}
 .price{color:#d6ad50;font-size:22px;font-weight:bold;margin:8px 0}
+.pics{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px}
+.pics img{height:150px;border-radius:10px;flex:none}
 button,.wa{display:block;width:100%;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer;text-align:center;text-decoration:none;background:#d6ad50;color:#171717}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
 .chip{flex:none;width:auto;padding:8px 14px;background:#292b33;color:#fff;font-size:14px}
@@ -61,12 +63,16 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
     <label>السعر ($)</label>
     <input id="price" type="number" placeholder="مثلاً: 50">
 
+    <label>صور الحساب (حتى 3 صور)</label>
+    <input id="imgs" type="file" accept="image/*" multiple>
+    <small id="imgInfo">اختياري، بس الصور بتزيد فرصة البيع</small>
+
     <label>رابط الواتساب تبعك</label>
     <input id="contact" placeholder="https://wa.me/963938948259 أو اكتب رقمك">
     <small>المشتري رح يتواصل معك من هذا الرابط</small>
 
     <br>
-    <button onclick="addAccount()">نشر الحساب</button>
+    <button id="pubBtn" onclick="addAccount()">نشر الحساب</button>
     <p id="msg"></p>
   </div>
 </div>
@@ -76,7 +82,10 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
 <script>
 const DEFAULT_WA = "https://wa.me/963938948259";
 
-const URL_ = "https://bzylclvczxhehmsnyhju.supabase.co/rest/v1/products";
+const BASE = "https://bzylclvczxhehmsnyhju.supabase.co";
+const URL_ = BASE + "/rest/v1/products";
+const STORE = BASE + "/storage/v1/object/account-images";
+const PUBLIC = BASE + "/storage/v1/object/public/account-images";
 const KEY = "sb_publishable_5Km0CwnO9ftM5-3LGVDztA_9vDoOt6W";
 const H = {apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json"};
 
@@ -110,11 +119,46 @@ function cleanWA(v){
   return null;
 }
 
+// تصغير الصورة قبل الرفع (أقصى 900 بيكسل)
+function resize(file){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const u = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, 900 / Math.max(img.width, img.height));
+      const w = Math.round(img.width * s), h = Math.round(img.height * s);
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(u);
+      c.toBlob(b => b ? res(b) : rej(new Error("فشل تجهيز الصورة")), "image/jpeg", 0.8);
+    };
+    img.onerror = () => rej(new Error("الصورة غير صالحة"));
+    img.src = u;
+  });
+}
+
+async function uploadImage(blob){
+  const name = Date.now() + "-" + Math.random().toString(36).slice(2, 8) + ".jpg";
+  const r = await fetch(STORE + "/" + name, {
+    method: "POST",
+    headers: {apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "image/jpeg"},
+    body: blob
+  });
+  if (!r.ok) throw new Error("فشل رفع الصورة");
+  return PUBLIC + "/" + name;
+}
+
 function buildUI(){
   document.getElementById("game").innerHTML =
     Object.keys(games).map(k=>'<option value="'+k+'">'+games[k].t+'</option>').join("");
   updateField();
   drawChips();
+  document.getElementById("imgs").addEventListener("change", function(){
+    const n = this.files.length;
+    document.getElementById("imgInfo").textContent =
+      n > 3 ? "رح ناخد أول 3 صور بس" : n ? "تم اختيار " + n + " صورة" : "اختياري، بس الصور بتزيد فرصة البيع";
+  });
 }
 
 function updateField(){
@@ -140,7 +184,11 @@ function draw(){
   box.innerHTML = list.map(a=>{
     const g = games[a.game] || {t:a.game, n:"الاسم", l:"المعرّف"};
     const link = cleanWA(a.contact) || DEFAULT_WA;
-    return '<div class="card"><h3>'+esc(a.name)+'</h3>'+
+    const pics = (a.images || "").split(",").filter(u => u.indexOf(PUBLIC + "/") === 0);
+    const picsHtml = pics.length
+      ? '<div class="pics">' + pics.map(u => '<a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" loading="lazy" alt=""></a>').join("") + '</div>'
+      : "";
+    return '<div class="card">'+picsHtml+'<h3>'+esc(a.name)+'</h3>'+
       '<div class="game">'+esc(g.t)+'</div>'+
       '<p>'+esc(g.l)+': '+esc(a.account_id)+'</p>'+
       '<div class="price">$'+esc(a.price)+'</div>'+
@@ -160,6 +208,7 @@ async function load(){
 
 async function addAccount(){
   const msg = document.getElementById("msg");
+  const btn = document.getElementById("pubBtn");
   const contact = cleanWA(document.getElementById("contact").value);
   const body = {
     game: document.getElementById("game").value,
@@ -170,18 +219,28 @@ async function addAccount(){
   };
   if(!body.name||!body.account_id||!body.price){msg.textContent="عبّي كل الحقول";return}
   if(!contact){msg.textContent="اكتب رابط واتساب صحيح (wa.me) أو رقمك";return}
-  msg.textContent="جاري النشر...";
+  btn.disabled = true;
   try{
+    const files = Array.from(document.getElementById("imgs").files).slice(0, 3);
+    const urls = [];
+    for (let i = 0; i < files.length; i++) {
+      msg.textContent = "جاري رفع الصورة " + (i + 1) + " من " + files.length + "...";
+      urls.push(await uploadImage(await resize(files[i])));
+    }
+    if (urls.length) body.images = urls.join(",");
+    msg.textContent = "جاري النشر...";
     const r = await fetch(URL_,{method:"POST",headers:Object.assign({Prefer:"return=minimal"},H),body:JSON.stringify(body)});
     if(!r.ok){const e=await r.json();throw new Error(e.message||"خطأ")}
     msg.textContent="✅ تم نشر الحساب";
-    ["name","accId","price","contact"].forEach(i=>document.getElementById(i).value="");
+    ["name","accId","price","contact","imgs"].forEach(i=>document.getElementById(i).value="");
+    document.getElementById("imgInfo").textContent = "اختياري، بس الصور بتزيد فرصة البيع";
     load();
   }catch(e){msg.textContent="❌ "+e.message}
+  btn.disabled = false;
 }
 
 buildUI();
 load();
 </script>
 </body>
-</html>
+  </html>
