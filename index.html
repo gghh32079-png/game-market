@@ -51,8 +51,8 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
     <label>اللعبة</label>
     <select id="game" onchange="updateField()"></select>
 
-    <label>اسم الحساب</label>
-    <input id="name" placeholder="مثلاً: قرية ماكس">
+    <label id="nameLabel">اسم الحساب</label>
+    <input id="name">
 
     <label id="idLabel">المعرّف</label>
     <input id="accId">
@@ -60,6 +60,10 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
 
     <label>السعر ($)</label>
     <input id="price" type="number" placeholder="مثلاً: 50">
+
+    <label>رابط الواتساب تبعك</label>
+    <input id="contact" placeholder="https://wa.me/963938948259 أو اكتب رقمك">
+    <small>المشتري رح يتواصل معك من هذا الرابط</small>
 
     <br>
     <button onclick="addAccount()">نشر الحساب</button>
@@ -70,31 +74,41 @@ footer{background:#191a20;padding:22px;margin-top:40px;color:#888}
 <footer>© 2026 GAME MARKET</footer>
 
 <script>
-// ✏️ غيّر رقمك هون (بدون + وبدون صفر بالبداية، مع رمز الدولة)
-const WA = "963XXXXXXXXX";
+const DEFAULT_WA = "https://wa.me/963938948259";
 
 const URL_ = "https://bzylclvczxhehmsnyhju.supabase.co/rest/v1/products";
 const KEY = "sb_publishable_5Km0CwnO9ftM5-3LGVDztA_9vDoOt6W";
 const H = {apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json"};
 
 const games = {
-  pubg:     {t: "ببجي",              l: "الأيدي (ID)",      h: "مثلاً: 5123456789"},
-  clash:    {t: "كلاش أوف كلانس",    l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
-  royale:   {t: "كلاش رويال",        l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
-  brawl:    {t: "براول ستارز",       l: "المعرّف (Tag)",    h: "مثلاً: #2PP0LQ8"},
-  freefire: {t: "فري فاير",          l: "الأيدي (ID)",      h: "مثلاً: 123456789"},
-  cod:      {t: "كول أوف ديوتي موبايل", l: "الأيدي (UID)",  h: "مثلاً: 6812345678"},
-  fortnite: {t: "فورتنايت",          l: "اسم المستخدم",     h: "مثلاً: Player123"},
-  roblox:   {t: "روبلوكس",           l: "اسم المستخدم",     h: "مثلاً: Player123"},
-  minecraft:{t: "ماكنرافت",          l: "اسم المستخدم",     h: "مثلاً: Steve123"},
-  fc:       {t: "EA FC / فيفا",      l: "الأيدي (ID)",      h: "مثلاً: اسم الحساب أو الأيدي"},
-  genshin:  {t: "جينشن إمباكت",      l: "الـ UID",          h: "مثلاً: 800123456"},
-  other:    {t: "لعبة أخرى",         l: "المعرّف",          h: "الأيدي أو اسم المستخدم"}
+  pubg:     {t:"ببجي",                 n:"اسم اللاعب",     nh:"مثلاً: Omar",          l:"الأيدي (ID)",   h:"مثلاً: 5123456789"},
+  clash:    {t:"كلاش أوف كلانس",       n:"اسم القرية",     nh:"مثلاً: قرية ماكس",     l:"المعرّف (Tag)", h:"مثلاً: #2PP0LQ8"},
+  royale:   {t:"كلاش رويال",           n:"اسم اللاعب",     nh:"مثلاً: Omar",          l:"المعرّف (Tag)", h:"مثلاً: #2PP0LQ8"},
+  brawl:    {t:"براول ستارز",          n:"اسم اللاعب",     nh:"مثلاً: Omar",          l:"المعرّف (Tag)", h:"مثلاً: #2PP0LQ8"},
+  freefire: {t:"فري فاير",             n:"اسم اللاعب",     nh:"مثلاً: Omar",          l:"الأيدي (ID)",   h:"مثلاً: 123456789"},
+  cod:      {t:"كول أوف ديوتي موبايل", n:"اسم اللاعب",     nh:"مثلاً: Omar",          l:"الأيدي (UID)",  h:"مثلاً: 6812345678"},
+  fortnite: {t:"فورتنايت",             n:"اسم الحساب",     nh:"مثلاً: حساب سكنات نادرة", l:"اسم المستخدم", h:"مثلاً: Player123"},
+  roblox:   {t:"روبلوكس",              n:"اسم الحساب",     nh:"مثلاً: حساب Robux",    l:"اسم المستخدم",  h:"مثلاً: Player123"},
+  minecraft:{t:"ماينكرافت",            n:"اسم الحساب",     nh:"مثلاً: حساب كامل",     l:"اسم المستخدم",  h:"مثلاً: Steve123"},
+  fc:       {t:"EA FC / فيفا",         n:"اسم الفريق",     nh:"مثلاً: Dream Team",    l:"الأيدي (ID)",   h:"الأيدي أو اسم الحساب"},
+  genshin:  {t:"جينشن إمباكت",         n:"اسم اللاعب",     nh:"مثلاً: Traveler",      l:"الـ UID",       h:"مثلاً: 800123456"},
+  other:    {t:"لعبة أخرى",            n:"اسم الحساب",     nh:"اكتب اسم الحساب",      l:"المعرّف",       h:"الأيدي أو اسم المستخدم"}
 };
 
 let filter = "all", rows = [];
 
 function esc(s){const d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+
+function cleanWA(v){
+  v = (v || "").trim();
+  if (/^https:\/\/wa\.me\/\d{7,15}(\?.*)?$/.test(v)) return v;
+  const digits = v.replace(/[\s+\-]/g, "");
+  if (/^\d{7,15}$/.test(digits)) {
+    const n = digits.startsWith("0") ? "963" + digits.slice(1) : digits;
+    return "https://wa.me/" + n;
+  }
+  return null;
+}
 
 function buildUI(){
   document.getElementById("game").innerHTML =
@@ -105,6 +119,8 @@ function buildUI(){
 
 function updateField(){
   const g = games[document.getElementById("game").value];
+  document.getElementById("nameLabel").textContent = g.n;
+  document.getElementById("name").placeholder = g.nh;
   document.getElementById("idLabel").textContent = g.l;
   document.getElementById("accId").placeholder = g.h;
 }
@@ -122,13 +138,13 @@ function draw(){
   const list = filter==="all" ? rows : rows.filter(a=>a.game===filter);
   if(!list.length){box.innerHTML="<p>ما في حسابات هون بعد.</p>";return}
   box.innerHTML = list.map(a=>{
-    const g = games[a.game] || {t:a.game, l:"المعرّف"};
-    const text = encodeURIComponent("مرحباً، أنا مهتم بحساب "+g.t+" ("+a.name+") بسعر $"+a.price);
+    const g = games[a.game] || {t:a.game, n:"الاسم", l:"المعرّف"};
+    const link = cleanWA(a.contact) || DEFAULT_WA;
     return '<div class="card"><h3>'+esc(a.name)+'</h3>'+
       '<div class="game">'+esc(g.t)+'</div>'+
       '<p>'+esc(g.l)+': '+esc(a.account_id)+'</p>'+
       '<div class="price">$'+esc(a.price)+'</div>'+
-      '<a class="wa" href="https://wa.me/'+WA+'?text='+text+'" target="_blank">تواصل مع البائع</a></div>';
+      '<a class="wa" href="'+esc(link)+'" target="_blank" rel="noopener">تواصل مع البائع</a></div>';
   }).join("");
 }
 
@@ -144,19 +160,22 @@ async function load(){
 
 async function addAccount(){
   const msg = document.getElementById("msg");
+  const contact = cleanWA(document.getElementById("contact").value);
   const body = {
     game: document.getElementById("game").value,
     name: document.getElementById("name").value.trim(),
     account_id: document.getElementById("accId").value.trim(),
-    price: Number(document.getElementById("price").value)
+    price: Number(document.getElementById("price").value),
+    contact: contact
   };
   if(!body.name||!body.account_id||!body.price){msg.textContent="عبّي كل الحقول";return}
+  if(!contact){msg.textContent="اكتب رابط واتساب صحيح (wa.me) أو رقمك";return}
   msg.textContent="جاري النشر...";
   try{
     const r = await fetch(URL_,{method:"POST",headers:Object.assign({Prefer:"return=minimal"},H),body:JSON.stringify(body)});
     if(!r.ok){const e=await r.json();throw new Error(e.message||"خطأ")}
     msg.textContent="✅ تم نشر الحساب";
-    ["name","accId","price"].forEach(i=>document.getElementById(i).value="");
+    ["name","accId","price","contact"].forEach(i=>document.getElementById(i).value="");
     load();
   }catch(e){msg.textContent="❌ "+e.message}
 }
